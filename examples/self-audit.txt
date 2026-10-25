@@ -1,0 +1,4 @@
+# Illustrative output; the target path is intentionally generic.
+Verdict: READY
+Project: /path/to/repo/agents/sample-agent
+No findings.
