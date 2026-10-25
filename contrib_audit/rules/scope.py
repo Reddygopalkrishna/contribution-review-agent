@@ -12,6 +12,17 @@ _FORBIDDEN_DIRS = {".venv", "venv", "env", "node_modules", "__pycache__"}
 _FORBIDDEN_SUFFIXES = {".sqlite", ".db", ".pem", ".key"}
 
 
+def _is_tracked(project: Path, path: Path) -> bool:
+    result = subprocess.run(
+        ["git", "ls-files", "--error-unmatch", path.relative_to(project).as_posix()],
+        cwd=project,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
 def check_hygiene(context: RuleContext) -> list[Finding]:
     """Check local artifacts and .gitignore patterns without deleting anything."""
     project = context.project_path
@@ -35,6 +46,8 @@ def check_hygiene(context: RuleContext) -> list[Finding]:
             continue
         if path.is_dir() and path.name in _FORBIDDEN_DIRS and not is_ignored(path):
             findings.append(Finding("R08", "error", str(path), None, path.name, "Remove local environments, caches, and dependency directories from the contribution."))
+        elif path.is_file() and path.name == ".env" and _is_tracked(project, path):
+            findings.append(Finding("R08", "error", str(path), None, path.name, "Remove tracked .env files; use .env.example for placeholders."))
         elif path.is_file() and (path.name == ".env" or path.suffix.lower() in _FORBIDDEN_SUFFIXES) and not is_ignored(path):
             findings.append(Finding("R08", "error", str(path), None, path.name, "Remove local credentials, databases, and private-key files from the contribution."))
     if ignore_path.is_file():
