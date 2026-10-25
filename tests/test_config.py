@@ -21,6 +21,7 @@ def test_generic_profile_accepts_a_direct_child_without_template_requirements(tm
     repo = tmp_path / "repo"
     project = repo / "sample-project"
     project.mkdir(parents=True)
+    (repo / "LICENSE").write_text("MIT License\n", encoding="utf-8")
     (project / "README.md").write_text("# Sample\n\n### Example Output\n\nVerdict: READY\n", encoding="utf-8")
     (project / ".gitignore").write_text(".env\n.venv/\n", encoding="utf-8")
     (project / "requirements.txt").write_text("\n", encoding="utf-8")
@@ -32,6 +33,7 @@ def test_cli_accepts_a_builtin_profile_override(tmp_path, capsys):
     repo = tmp_path / "repo"
     project = repo / "sample-project"
     project.mkdir(parents=True)
+    (repo / "LICENSE").write_text("MIT License\n", encoding="utf-8")
     (project / "README.md").write_text("# Sample\n\n### Example Output\n\nVerdict: READY\n", encoding="utf-8")
     (project / ".gitignore").write_text(".env\n.venv/\n", encoding="utf-8")
     (project / "requirements.txt").write_text("\n", encoding="utf-8")

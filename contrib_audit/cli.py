@@ -29,7 +29,7 @@ def _default_config(repo_root: Path) -> AuditConfig:
     return get_profile("generic")
 
 
-def audit(project_path: Path, repo_root: Path | None = None, config: AuditConfig | None = None) -> AuditReport:
+def audit(project_path: Path, repo_root: Path | None = None, config: AuditConfig | None = None, check_osv: bool = False) -> AuditReport:
     """Run every deterministic rule and calculate the final verdict."""
     project = project_path.resolve()
     root = repo_root.resolve() if repo_root else find_repo_root(project)
@@ -38,7 +38,7 @@ def audit(project_path: Path, repo_root: Path | None = None, config: AuditConfig
         report.findings.append(__import__("contrib_audit.models", fromlist=["Finding"]).Finding("R01", "error", str(project), None, "repository template/README.md was not found", "Pass --repo-root or run inside a repository using this contribution template."))
         report.verdict = compute_verdict(report)
         return report
-    context = RuleContext(project, root, config or _default_config(root))
+    context = RuleContext(project, root, config or _default_config(root), check_osv)
     findings = [finding for rule in RULES for finding in rule(context)]
     report = AuditReport(str(project), str(root), sorted(findings, key=lambda item: (item.id, item.file, item.line or 0)))
     report.verdict = compute_verdict(report)
@@ -53,6 +53,7 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--repo-root", type=Path)
     check.add_argument("--format", choices=("text", "markdown", "json", "github"), default="text")
     check.add_argument("--config", help="Built-in profile name or path to a JSON configuration file.")
+    check.add_argument("--osv", action="store_true", help="Query OSV for pinned PyPI dependencies; disabled by default.")
     init = subparsers.add_parser("init", help="Write a starter .contrib-audit.json without overwriting one.")
     init.add_argument("path", type=Path, nargs="?", default=Path(".contrib-audit.json"))
     init.add_argument("--profile", choices=tuple(BUILTIN_PROFILES), default="generic")
@@ -69,7 +70,7 @@ def main(argv: list[str] | None = None) -> int:
         config = load_config(args.config) if args.config else None
     except ConfigError as error:
         build_parser().error(str(error))
-    report = audit(args.path, args.repo_root, config)
+    report = audit(args.path, args.repo_root, config, args.osv)
     renderers = {"text": render_text, "markdown": render_markdown, "json": render_json, "github": render_github_actions}
     print(renderers[args.format](report))
     return 0 if report.verdict in {"READY", "APPROVE_WITH_NITS"} else 1

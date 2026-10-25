@@ -22,6 +22,7 @@ def make_project(tmp_path: Path, name: str = "sample-agent") -> tuple[Path, Path
     repo = tmp_path / "repo"
     (repo / "template").mkdir(parents=True)
     (repo / "template" / "README.md").write_text("\n".join(f"## {heading}" for heading in _FALLBACK_HEADINGS), encoding="utf-8")
+    (repo / "LICENSE").write_text("MIT License\n", encoding="utf-8")
     project = repo / "agents" / name
     project.mkdir(parents=True)
     write_complete_readme(project / "README.md")
