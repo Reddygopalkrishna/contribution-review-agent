@@ -1,0 +1,26 @@
+name: Contribution audit
+description: Run static contribution checks and emit job-summary and workflow annotations.
+inputs:
+  path:
+    description: Contribution directory to audit.
+    required: true
+  repo-root:
+    description: Repository root containing the audit configuration.
+    required: false
+    default: .
+  config:
+    description: Optional built-in profile name or JSON configuration path.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        AUDIT_PATH: ${{ inputs.path }}
+        AUDIT_REPO_ROOT: ${{ inputs.repo-root }}
+        AUDIT_CONFIG: ${{ inputs.config }}
+      run: |
+        args=(check "$AUDIT_PATH" --repo-root "$AUDIT_REPO_ROOT" --format github)
+        if [[ -n "$AUDIT_CONFIG" ]]; then args+=(--config "$AUDIT_CONFIG"); fi
+        PYTHONPATH="$GITHUB_ACTION_PATH${PYTHONPATH:+:$PYTHONPATH}" python3 -m contrib_audit "${args[@]}"
