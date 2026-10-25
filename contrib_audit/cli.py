@@ -5,13 +5,14 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from contrib_audit.evaluation import render_evaluation, run_seeded_evaluation
 from contrib_audit.models import AuditReport
 from contrib_audit.report import compute_verdict, render_json, render_markdown, render_text
 from contrib_audit.rules import RULES, RuleContext
 
 
 def find_repo_root(start: Path) -> Path | None:
-    """Find a GDG-style contribution repository by locating template/README.md."""
+    """Find the enclosing repository by locating template/README.md."""
     current = start.resolve()
     for candidate in (current, *current.parents):
         if (candidate / "template" / "README.md").is_file():
@@ -42,11 +43,15 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("path", type=Path)
     check.add_argument("--repo-root", type=Path)
     check.add_argument("--format", choices=("text", "markdown", "json"), default="text")
+    subparsers.add_parser("evaluate", help="Run the offline seeded-defect evaluation.")
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.command == "evaluate":
+        print(render_evaluation(run_seeded_evaluation()))
+        return 0
     report = audit(args.path, args.repo_root)
     renderers = {"text": render_text, "markdown": render_markdown, "json": render_json}
     print(renderers[args.format](report))
