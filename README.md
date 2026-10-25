@@ -13,7 +13,7 @@ The deterministic auditor is implemented and tested. It uses only the Python sta
 - Provides a read-only GitHub Action that reports through annotations and the job summary; see [docs/github-action.md](docs/github-action.md).
 - Checks recognizable repository licenses and exact Python dependency pins; optional OSV lookup is documented in [docs/license-and-dependencies.md](docs/license-and-dependencies.md).
 
-The optional Google ADK/Gemini layer and GitHub triage command are not implemented yet.
+The optional Google ADK/Gemini layer is implemented but **experimental and not yet verified with a real model**; see [docs/adk-experimental.md](docs/adk-experimental.md). The GitHub triage command is not implemented yet.
 
 ## Prerequisites
 
@@ -75,7 +75,7 @@ python3 -m pytest -q
 
 ## Roadmap
 
-1. Experimental ADK support for Gemini and locally served models, only after mock tests and real-run validation.
+1. Real-run verification of the experimental ADK/Gemini layer (mock tests exist; a real run with a live key has not been performed yet).
 
 ## License and provenance
 
