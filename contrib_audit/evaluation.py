@@ -31,6 +31,7 @@ class EvaluationMetric:
 def _write_clean_sample(root: Path) -> tuple[Path, Path]:
     (root / "template").mkdir()
     (root / "template" / "README.md").write_text("\n".join(f"## {heading}" for heading in _FALLBACK_HEADINGS), encoding="utf-8")
+    (root / "LICENSE").write_text("MIT License\n", encoding="utf-8")
     project = root / "agents" / "sample-agent"
     project.mkdir(parents=True)
     sections = ["# Sample"]

@@ -14,12 +14,14 @@ class RuleContext:
     project_path: Path
     repo_root: Path
     config: AuditConfig = field(default_factory=lambda: get_profile("legacy-template"))
+    check_osv: bool = False
 
 
 Rule = Callable[[RuleContext], list[Finding]]
 
 
 from contrib_audit.rules.deps import check_dependencies
+from contrib_audit.rules.license import check_license
 from contrib_audit.rules.readme import check_readme
 from contrib_audit.rules.scope import check_hygiene, check_scope
 from contrib_audit.rules.secrets import check_secrets
@@ -32,6 +34,7 @@ RULES: tuple[Rule, ...] = (
     check_hygiene,
     check_scope,
     check_dependencies,
+    check_license,
 )
 
 __all__ = ["RULES", "RuleContext"]
