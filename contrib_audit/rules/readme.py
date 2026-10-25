@@ -29,8 +29,11 @@ def _line_number(text: str, fragment: str) -> int:
     return text[: text.find(fragment)].count("\n") + 1 if fragment in text else 1
 
 
-def _template_headings(repo_root: Path) -> tuple[str, ...]:
-    template = repo_root / "template" / "README.md"
+def _template_headings(context: RuleContext) -> tuple[str, ...]:
+    source = context.config.readme_heading_source
+    if source is None:
+        return ()
+    template = context.repo_root / source
     try:
         text = template.read_text(encoding="utf-8")
     except OSError:
@@ -69,9 +72,10 @@ def check_readme(context: RuleContext) -> list[Finding]:
     text = readme_path.read_text(encoding="utf-8", errors="replace")
     findings: list[Finding] = []
     headings = {line.lstrip("#").strip() for line in text.splitlines() if line.startswith("#")}
-    missing = [heading for heading in _template_headings(context.repo_root) if heading not in headings]
+    missing = [heading for heading in _template_headings(context) if heading not in headings]
     if missing:
-        findings.append(Finding("R05", "error", str(readme_path), None, ", ".join(missing), "Add every section from template/README.md."))
+        source = context.config.readme_heading_source
+        findings.append(Finding("R05", "error", str(readme_path), None, ", ".join(missing), f"Add every section from {source}."))
     for pattern in _PLACEHOLDER_PATTERNS:
         match = pattern.search(text)
         if match:

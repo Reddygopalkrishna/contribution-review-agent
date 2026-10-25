@@ -2,16 +2,18 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
 
+from contrib_audit.config import AuditConfig, get_profile
 from contrib_audit.models import Finding
 
 @dataclass(frozen=True)
 class RuleContext:
     project_path: Path
     repo_root: Path
+    config: AuditConfig = field(default_factory=lambda: get_profile("legacy-template"))
 
 
 Rule = Callable[[RuleContext], list[Finding]]
