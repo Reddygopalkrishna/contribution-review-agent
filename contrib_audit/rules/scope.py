@@ -59,16 +59,16 @@ def check_hygiene(context: RuleContext) -> list[Finding]:
     return findings
 
 
-def _git_changed_files(repo_root: Path) -> tuple[list[str] | None, str | None]:
-    for ref in ("upstream/main", "origin/main"):
+def _git_changed_files(context: RuleContext) -> tuple[list[str] | None, str | None]:
+    for ref in context.config.scope_base_refs:
         result = subprocess.run(
-            ["git", "diff", "--name-only", f"{ref}...HEAD"], cwd=repo_root,
+            ["git", "diff", "--name-only", f"{ref}...HEAD"], cwd=context.repo_root,
             capture_output=True, text=True, check=False,
         )
         if result.returncode == 0:
             changed = {line for line in result.stdout.splitlines() if line}
             status = subprocess.run(
-                ["git", "status", "--porcelain", "--untracked-files=all"], cwd=repo_root,
+                ["git", "status", "--porcelain", "--untracked-files=all"], cwd=context.repo_root,
                 capture_output=True, text=True, check=False,
             )
             if status.returncode != 0:
@@ -77,20 +77,24 @@ def _git_changed_files(repo_root: Path) -> tuple[list[str] | None, str | None]:
                 if len(line) >= 4:
                     changed.add(line[3:])
             return sorted(changed), None
-    return None, "could not compare against upstream/main or origin/main"
+    return None, f"could not compare against {' or '.join(context.config.scope_base_refs)}"
 
 
 def check_scope(context: RuleContext) -> list[Finding]:
     """Ensure committed changes are confined to this project and an optional index row."""
-    files, error = _git_changed_files(context.repo_root)
+    files, error = _git_changed_files(context)
     if files is None:
         return [Finding("R09", "info", str(context.repo_root), None, error or "git unavailable", "Fetch an upstream or origin main branch to enable scope checking.")]
     project_prefix = context.project_path.relative_to(context.repo_root).as_posix() + "/"
-    allowed_indexes = {"agents/README.md", "tools/README.md"}
+    allowed_indexes = set(context.config.scope_allowed_extra_paths)
     out_of_scope = [name for name in files if not name.startswith(project_prefix) and name not in allowed_indexes]
     if out_of_scope:
-        return [Finding("R09", "error", str(context.repo_root), None, ", ".join(out_of_scope), "Limit the pull request to this project plus, optionally, one category index row.")]
+        if allowed_indexes == {"agents/README.md", "tools/README.md"}:
+            hint = "Limit the pull request to this project plus, optionally, one category index row."
+        else:
+            hint = f"Limit the pull request to this project plus: {', '.join(sorted(allowed_indexes)) or 'no extra paths'}."
+        return [Finding("R09", "error", str(context.repo_root), None, ", ".join(out_of_scope), hint)]
     index_edits = [name for name in files if name in allowed_indexes]
-    if len(index_edits) > 1:
+    if len(index_edits) > context.config.scope_max_extra_paths:
         return [Finding("R09", "error", str(context.repo_root), None, ", ".join(index_edits), "Edit at most one category index file.")]
     return []

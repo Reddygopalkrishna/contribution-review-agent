@@ -8,8 +8,7 @@ The deterministic auditor is implemented and tested. It uses only the Python sta
 
 - Checks project placement, names, required files, README completeness, documented environment variables, likely secrets, local artifacts, Git change scope, example output, and Python dependency declarations.
 - Produces text, Markdown, or JSON findings with redacted evidence and direct fix hints.
-- Supports the current GDG-style contribution layout: a project directly under `agents/` or `tools/`, with the repository template at `template/README.md`.
-- Includes an offline seeded-defect evaluation harness; its measured results are in [docs/eval.md](docs/eval.md).
+- Uses a generic profile by default and can load repository conventions from `.contrib-audit.json`.
 
 The optional Google ADK/Gemini layer and GitHub triage command are not implemented yet.
 
@@ -33,19 +32,23 @@ The deterministic auditor needs no API key and no `.env` file.
 
 ## Run an audit
 
-Pass the contribution directory to inspect. For a GDG-style repository, automatic discovery works when the target is below that repository:
+Pass the contribution directory to inspect. A `.contrib-audit.json` in an ancestor directory is loaded automatically:
 
 ```bash
-python3 -m contrib_audit check /path/to/repo/agents/sample-agent
+python3 -m contrib_audit check /path/to/repo/sample-agent
 ```
 
 Or pass the contribution repository explicitly:
 
 ```bash
-python3 -m contrib_audit check /path/to/repo/agents/sample-agent --repo-root /path/to/repo --format json
+python3 -m contrib_audit check /path/to/repo/sample-agent --repo-root /path/to/repo --format json
 ```
 
 Exit status is zero for `READY` and `APPROVE_WITH_NITS`, and one for `CHANGES_REQUESTED` and `REJECT`.
+
+Use `python3 -m contrib_audit init` to write a generic starter configuration. `--config` is available when you want to override auto-discovery with a built-in compatibility profile or another JSON file.
+
+The complete JSON schema and profile behavior are documented in [docs/configuration.md](docs/configuration.md).
 
 ## Test
 
@@ -65,15 +68,15 @@ python3 -m pytest -q
 
 - Regex-based secret detection can have false positives and false negatives; it is not a replacement for a dedicated secret scanner.
 - Git scope checking needs either `upstream/main` or `origin/main`; otherwise it emits an informational skip.
-- Today's conventions are GDG-style and hardcoded. Configurable profiles are planned next.
+- The generic profile expects a project to be a direct child of the configured repository root; use `.contrib-audit.json` for another layout.
 
 ## Roadmap
 
-1. Config-driven rules with GDG-compatible and generic profiles.
+1. Seeded-defect evaluation with published precision and recall results.
 2. A read-only GitHub Action using pull-request-safe defaults.
 3. Deterministic license and dependency checks, with optional OSV lookup.
 4. Experimental ADK support for Gemini and locally served models, only after mock tests and real-run validation.
 
 ## License and provenance
 
-This project is MIT licensed. Its README, `.env.example`, and `.gitignore` began from templates in [GDG Cloud Bengaluru's `open-source-agents`](https://github.com/gdgcblr/open-source-agents), also MIT licensed; the upstream copyright notice is retained in [LICENSE](LICENSE).
+This project is MIT licensed; see [LICENSE](LICENSE).
