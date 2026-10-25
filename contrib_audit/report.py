@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import os
 from collections import Counter
+from pathlib import Path
 
 from contrib_audit.models import AuditReport
 
@@ -49,3 +51,31 @@ def render_markdown(report: AuditReport) -> str:
 
 def render_json(report: AuditReport) -> str:
     return json.dumps(report.to_dict(), indent=2, sort_keys=True)
+
+
+def _github_escape(value: str) -> str:
+    return value.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A").replace(":", "%3A").replace(",", "%2C")
+
+
+def render_github_actions(report: AuditReport) -> str:
+    """Write a job summary and return GitHub workflow annotations."""
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary_path:
+        with Path(summary_path).open("a", encoding="utf-8") as summary:
+            summary.write(render_markdown(report) + "\n")
+    annotations: list[str] = []
+    for finding in report.findings:
+        if finding.severity not in {"error", "warning"}:
+            continue
+        level = "error" if finding.severity == "error" else "warning"
+        location = ""
+        try:
+            relative = Path(finding.file).resolve().relative_to(Path.cwd().resolve())
+            location = f"file={_github_escape(relative.as_posix())}"
+            if finding.line is not None:
+                location += f",line={finding.line}"
+        except (OSError, ValueError):
+            pass
+        message = _github_escape(f"{finding.id}: {finding.evidence}. {finding.fix_hint}")
+        annotations.append(f"::{level} {location}::{message}")
+    return "\n".join(annotations or ["No GitHub workflow annotations."])

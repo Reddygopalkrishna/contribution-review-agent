@@ -9,6 +9,8 @@ The deterministic auditor is implemented and tested. It uses only the Python sta
 - Checks project placement, names, required files, README completeness, documented environment variables, likely secrets, local artifacts, Git change scope, example output, and Python dependency declarations.
 - Produces text, Markdown, or JSON findings with redacted evidence and direct fix hints.
 - Uses a generic profile by default and can load repository conventions from `.contrib-audit.json`.
+- Includes an offline seeded-defect evaluation harness; its measured results are in [docs/eval.md](docs/eval.md).
+- Provides a read-only GitHub Action that reports through annotations and the job summary; see [docs/github-action.md](docs/github-action.md).
 
 The optional Google ADK/Gemini layer and GitHub triage command are not implemented yet.
 
@@ -72,10 +74,8 @@ python3 -m pytest -q
 
 ## Roadmap
 
-1. Seeded-defect evaluation with published precision and recall results.
-2. A read-only GitHub Action using pull-request-safe defaults.
-3. Deterministic license and dependency checks, with optional OSV lookup.
-4. Experimental ADK support for Gemini and locally served models, only after mock tests and real-run validation.
+1. Deterministic license and dependency checks, with optional OSV lookup.
+2. Experimental ADK support for Gemini and locally served models, only after mock tests and real-run validation.
 
 ## License and provenance
 

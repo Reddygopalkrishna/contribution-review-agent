@@ -7,7 +7,7 @@ from pathlib import Path
 
 from contrib_audit.config import AuditConfig, BUILTIN_PROFILES, ConfigError, get_profile, load_config, write_starter_config
 from contrib_audit.models import AuditReport
-from contrib_audit.report import compute_verdict, render_json, render_markdown, render_text
+from contrib_audit.report import compute_verdict, render_github_actions, render_json, render_markdown, render_text
 from contrib_audit.rules import RULES, RuleContext
 
 
@@ -51,7 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
     check = subparsers.add_parser("check", help="Audit one project directory without an API key.")
     check.add_argument("path", type=Path)
     check.add_argument("--repo-root", type=Path)
-    check.add_argument("--format", choices=("text", "markdown", "json"), default="text")
+    check.add_argument("--format", choices=("text", "markdown", "json", "github"), default="text")
     check.add_argument("--config", help="Built-in profile name or path to a JSON configuration file.")
     init = subparsers.add_parser("init", help="Write a starter .contrib-audit.json without overwriting one.")
     init.add_argument("path", type=Path, nargs="?", default=Path(".contrib-audit.json"))
@@ -70,6 +70,6 @@ def main(argv: list[str] | None = None) -> int:
     except ConfigError as error:
         build_parser().error(str(error))
     report = audit(args.path, args.repo_root, config)
-    renderers = {"text": render_text, "markdown": render_markdown, "json": render_json}
+    renderers = {"text": render_text, "markdown": render_markdown, "json": render_json, "github": render_github_actions}
     print(renderers[args.format](report))
     return 0 if report.verdict in {"READY", "APPROVE_WITH_NITS"} else 1
