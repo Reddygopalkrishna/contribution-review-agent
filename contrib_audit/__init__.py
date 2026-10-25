@@ -1,4 +1,4 @@
-"""Offline deterministic checks for open-source-agents contributions."""
+"""Offline deterministic checks for repository contributions."""
 
 from contrib_audit.cli import audit
 

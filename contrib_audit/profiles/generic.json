@@ -1,0 +1,13 @@
+{
+  "profile": "generic",
+  "allowed_parent_folders": [],
+  "required_files": ["README.md", ".gitignore"],
+  "manifest_files": ["requirements.txt", "pyproject.toml", "package.json", "Cargo.toml", "go.mod"],
+  "readme_heading_source": null,
+  "generic_names": [],
+  "scope": {
+    "base_refs": ["origin/main"],
+    "allowed_extra_paths": [],
+    "max_extra_paths": 0
+  }
+}

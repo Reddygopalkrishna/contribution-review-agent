@@ -1,0 +1,13 @@
+{
+  "profile": "legacy-template",
+  "allowed_parent_folders": ["agents", "tools"],
+  "required_files": ["README.md", ".env.example", ".gitignore"],
+  "manifest_files": ["requirements.txt", "pyproject.toml", "package.json", "Cargo.toml", "go.mod"],
+  "readme_heading_source": "template/README.md",
+  "generic_names": ["my-agent", "my-tool", "final-project", "final-test", "test", "demo", "helper"],
+  "scope": {
+    "base_refs": ["upstream/main", "origin/main"],
+    "allowed_extra_paths": ["agents/README.md", "tools/README.md"],
+    "max_extra_paths": 1
+  }
+}
