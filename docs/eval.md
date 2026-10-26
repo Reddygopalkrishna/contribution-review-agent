@@ -1,9 +1,15 @@
 # Seeded-defect evaluation
 
-Run the fully offline harness with:
+Run the fully offline test harness with:
 
 ```bash
-python3 -m contrib_audit evaluate
+python3 -m pytest tests/test_evaluation.py -v
+```
+
+Or print the evaluation metrics table directly:
+
+```bash
+python3 -c "from contrib_audit.evaluation import run_seeded_evaluation, render_evaluation; print(render_evaluation(run_seeded_evaluation()))"
 ```
 
 It creates a fresh known-clean sample for each scenario, injects exactly one defect, and never executes sample code. The fake credential is assembled only at runtime inside a temporary directory. The tracked `.env` scenario checks Git index metadata only; its contents are not read by the auditor.
